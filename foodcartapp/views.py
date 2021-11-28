@@ -68,8 +68,8 @@ def register_order(request):
     try:
         serializer.save()
         return Response(serializer.data, status.HTTP_201_CREATED)
-    except:
+    except Exception as exc:
         return Response(
-            {"error": "can not save order with products"},
+            {"server_error": f"Can not save order with products - {exc}"},
             status.HTTP_500_INTERNAL_SERVER_ERROR
         )
