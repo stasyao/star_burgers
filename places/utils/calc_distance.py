@@ -22,22 +22,24 @@ def fetch_coordinates(address):
     return lon, lat
 
 
-def get_coordinates_from_db_or_create(queryset, address):
-    for place in queryset:
+def get_coordinates_from_db_or_create(places: list, address):
+    for place in places:
         if place.address == address:
             return place.longitude, place.latitude
-    else:
-        lon, lat = fetch_coordinates(address)
-        queryset.append(Place.objects.create(longitude=lon,
-                                             latitude=lat,
-                                             address=address))
-        return lon, lat
+    lon, lat = fetch_coordinates(address)
+    # поскольку запросов к БД за списком локаций не делаем,
+    # то дополняем первоначально полученный список,
+    # чтобы при следующем вызове метода локация не считалась новой
+    places.append(Place.objects.create(longitude=lon,
+                                       latitude=lat,
+                                       address=address))
+    return lon, lat
 
 
-def calc_distance(queryset, address1, address2):
+def calc_distance(places, address1, address2):
     return round(
         distance.distance(
-            get_coordinates_from_db_or_create(queryset, address1),
-            get_coordinates_from_db_or_create(queryset, address2)
+            get_coordinates_from_db_or_create(places, address1),
+            get_coordinates_from_db_or_create(places, address2)
         ).km, 2
     )

@@ -3,6 +3,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import F, Sum
+from django.db.models.query import Prefetch
 
 
 class Restaurant(models.Model):
@@ -87,6 +88,15 @@ class Product(models.Model):
         return self.name
 
 
+class RestuarantMenuQueryset(models.QuerySet):
+    def get_available_menu(self):
+        return (self.select_related('restaurant', 'product')
+                    .only('restaurant__name',
+                          'restaurant__address',
+                          'product__id')
+                    .filter(availability=True))
+
+
 class RestaurantMenuItem(models.Model):
     restaurant = models.ForeignKey(
         Restaurant,
@@ -106,6 +116,8 @@ class RestaurantMenuItem(models.Model):
         db_index=True
     )
 
+    objects = RestuarantMenuQueryset.as_manager()
+
     class Meta:
         verbose_name = 'пункт меню ресторана'
         verbose_name_plural = 'пункты меню ресторана'
@@ -120,8 +132,10 @@ class RestaurantMenuItem(models.Model):
 class OrderQuerySet(models.QuerySet):
     def with_prices(self, processed=None):
         status = [0, 1] if processed is None else [processed]
+        products = Product.objects.only('id')
         return (
-            self.prefetch_related('products')
+            self.prefetch_related(Prefetch('products', queryset=products))
+                .defer('registered_at', 'delivered_at', 'called_at')
                 .filter(status__in=status)
                 .annotate(price=Sum(
                     F('productquantity__price') *

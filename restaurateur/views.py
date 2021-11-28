@@ -100,13 +100,26 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    restaurant_menu = RestaurantMenuItem.objects.select_related(
-        'restaurant', 'product'
-    ).filter(availability=True)
+    """
+    Независимо от количества заказов и манипуляций с ними, через контроллер
+    идёт всегда 4 запроса к БД:
+    - получить список всех ресторанов + доступных продуктов в них
+    - получить список всех необработанных заказов
+    - получить (через prefetch_related) список
+      всех продуктов в необработанных заказах
+    - получить список локаций, *отфильтрованный* по локациями ресторанов и
+      адресам из всех необработанных заказов, т.е. всю таблицу не берем, т.к.
+      она будет стремительно увеличиваться за счет каждого нового адреса клиента
+    Дополнительные запросы к БД возможны ИСКЛЮЧИТЕЛЬНО в ситуации, когда
+    появляется адрес (ресторана или в заказе), которого еще нет в БД.
+
+    Тогда количество запросов = 4 + число новых для базы адресов.
+    """
+    restaurant_menu = RestaurantMenuItem.objects.get_available_menu()
+    not_processed_orders = list(Order.objects.with_prices(processed=False))
     restaurant_addreses = set(
         entry.restaurant.address for entry in restaurant_menu
     )
-    not_processed_orders = list(Order.objects.with_prices(processed=False))
     clients_addreses = {order.address for order in not_processed_orders}
     places = list(
         Place.objects.filter(address__in=restaurant_addreses | clients_addreses)
