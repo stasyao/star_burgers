@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     # third party apps
     'debug_toolbar',
     'phonenumber_field',
+    'rest_framework',
     # local apps
     'foodcartapp.apps.FoodcartappConfig',
     'restaurateur.apps.RestaurateurConfig',
