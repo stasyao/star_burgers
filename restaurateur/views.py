@@ -1,14 +1,15 @@
-from django import forms
-from django.shortcuts import redirect, render
-from django.views import View
-from django.urls import reverse_lazy
-from django.contrib.auth.decorators import user_passes_test
+from collections import Counter
 
+from django import forms
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import user_passes_test
+from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
+from django.utils.html import format_html_join
+from django.views import View
 
-
-from foodcartapp.models import Order, Product, Restaurant
+from foodcartapp.models import Order, Product, Restaurant, RestaurantMenuItem
 
 
 class Login(forms.Form):
@@ -97,9 +98,30 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
+    restaurant_menu = RestaurantMenuItem.objects.select_related(
+        'restaurant', 'product'
+    ).filter(availability=True)
     not_processed_orders = Order.objects.with_prices(processed=False)
+    orders_and_restaurants = dict()
+    for order in not_processed_orders:
+        restaurants = []
+        for menu in restaurant_menu:
+            if menu.product in order.products.all():
+                restaurants.append(menu.restaurant)
+        else:
+            count = Counter(restaurants)
+            # оставляем только те рестораны, в которых доступны все продукты
+            # из заказа
+            # (проверяем по количеству наименований продуктов в заказе)
+            restaurants = [
+                (r.name, )
+                for r in count if count[r] == order.products.count()
+            ]
+            orders_and_restaurants[order] = format_html_join(
+                    '\n', "<li>{}</li>", restaurants
+            )
     return render(
         request,
         template_name='restaurateur/order_items.html',
-        context={'orders': not_processed_orders}
+        context={'orders_and_restaurants': orders_and_restaurants}
     )
