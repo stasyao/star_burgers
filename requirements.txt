@@ -4,5 +4,7 @@ django-debug-toolbar==3.2.1
 django-phonenumber-field==6.0.0
 environs==9.3.2
 flake8==4.0.1
+geopy==2.2.0
 phonenumbers==8.12.38
 Pillow==8.2.0
+requests==2.26.0
