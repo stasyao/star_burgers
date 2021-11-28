@@ -10,6 +10,8 @@ from django.utils.html import format_html_join
 from django.views import View
 
 from foodcartapp.models import Order, Product, Restaurant, RestaurantMenuItem
+from places.models import Place
+from places.utils import calc_distance
 
 
 class Login(forms.Form):
@@ -101,7 +103,14 @@ def view_orders(request):
     restaurant_menu = RestaurantMenuItem.objects.select_related(
         'restaurant', 'product'
     ).filter(availability=True)
-    not_processed_orders = Order.objects.with_prices(processed=False)
+    restaurant_addreses = set(
+        entry.restaurant.address for entry in restaurant_menu
+    )
+    not_processed_orders = list(Order.objects.with_prices(processed=False))
+    clients_addreses = {order.address for order in not_processed_orders}
+    places = list(
+        Place.objects.filter(address__in=restaurant_addreses | clients_addreses)
+    )
     orders_and_restaurants = dict()
     for order in not_processed_orders:
         restaurants = []
@@ -114,11 +123,12 @@ def view_orders(request):
             # из заказа
             # (проверяем по количеству наименований продуктов в заказе)
             restaurants = [
-                (r.name, )
+                (r.name, calc_distance(places, r.address, order.address))
                 for r in count if count[r] == order.products.count()
             ]
+            restaurants.sort(key=lambda x: x[1])
             orders_and_restaurants[order] = format_html_join(
-                    '\n', "<li>{}</li>", restaurants
+                    '\n', "<li>{} - {} км</li>", restaurants
             )
     return render(
         request,
