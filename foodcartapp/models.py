@@ -1,7 +1,8 @@
 from phonenumber_field.modelfields import PhoneNumberField
 
-from django.db import models
 from django.core.validators import MinValueValidator
+from django.db import models
+from django.db.models import F, Sum
 
 
 class Restaurant(models.Model):
@@ -125,11 +126,25 @@ class RestaurantMenuItem(models.Model):
         return f"{self.restaurant.name} - {self.product.name}"
 
 
+class OrderQuerySet(models.QuerySet):
+    def with_prices(self, processed=None):
+        status = [0, 1] if processed is None else [processed]
+        return (
+            self.prefetch_related('products')
+                .filter(status__in=status)
+                .annotate(price=Sum(
+                    F('productquantity__price') *
+                    F('productquantity__quantity')
+                    )
+                )
+            )
+
+
 class Order(models.Model):
 
     class OrderStatus(models.IntegerChoices):
+        NOT_PROCESSED = 0, 'не обработан'
         PROCESSED = 1, 'обработан'
-        NOT_PROCESSED = 2, 'не обработан'
 
     products = models.ManyToManyField(to=Product, through='ProductQuantity',
                                       verbose_name='продукт')
@@ -141,6 +156,8 @@ class Order(models.Model):
                                  verbose_name='статус заказа',
                                  default=OrderStatus.NOT_PROCESSED,
                                  db_index=True)
+
+    objects = OrderQuerySet.as_manager()
 
     class Meta:
         verbose_name_plural = 'Заказы'
@@ -159,9 +176,15 @@ class ProductQuantity(models.Model):
     product = models.ForeignKey(to=Product, on_delete=models.CASCADE,
                                 verbose_name='продукт')
     quantity = models.PositiveSmallIntegerField(
-        verbose_name='Количество',
+        verbose_name='количество',
         default=1,
         validators=[MinValueValidator(1)]
+    )
+    price = models.DecimalField(
+        'цена',
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(0)]
     )
 
     class Meta:

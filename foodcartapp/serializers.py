@@ -21,8 +21,9 @@ class OrderSerializer(serializers.ModelSerializer):
         products = validated_data.pop('products')
         order = Order.objects.create(**validated_data)
         products_for_order = [
-            ProductQuantity(**product | {'order': order})
-            for product in products
+            ProductQuantity(**product | {
+                'order': order, 'price': product['product'].price
+            }) for product in products
         ]
         ProductQuantity.objects.bulk_create(products_for_order)
         return order

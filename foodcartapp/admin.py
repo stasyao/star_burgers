@@ -16,6 +16,17 @@ class ProductDetailsInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     inlines = (ProductDetailsInline, )
+    list_display = [
+        'status', 'address', 'phonenumber', 'price'
+    ]
+    ordering = ['status', ]
+
+    def get_queryset(self, request):
+        return Order.objects.with_prices()
+
+    @admin.display(description='стоимость заказа')
+    def price(self, obj):
+        return obj.price
 
 
 class RestaurantMenuItemInline(admin.TabularInline):
