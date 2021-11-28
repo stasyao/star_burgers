@@ -156,6 +156,8 @@ class Order(models.Model):
                                  verbose_name='статус заказа',
                                  default=OrderStatus.NOT_PROCESSED,
                                  db_index=True)
+    comment = models.TextField(verbose_name='комментарий к заказу',
+                               blank=True)
 
     objects = OrderQuerySet.as_manager()
 

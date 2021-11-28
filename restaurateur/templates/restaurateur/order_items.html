@@ -18,6 +18,7 @@
       <th>Клиент</th>
       <th>Телефон</th>
       <th>Адрес доставки</th>
+      <th>Комментарий</th>
       <th></th>
     </tr>
 
@@ -28,6 +29,7 @@
         <td>{{ order.get_full_name }}</td>
         <td>{{ order.phonenumber }}</td>
         <td>{{ order.address }}</td>
+        <td>{{ order.comment }}</td>
         <td>
           <a href="{% url 'admin:foodcartapp_order_change' order.pk %}">
             Редактировать заказ
