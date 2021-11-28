@@ -158,6 +158,14 @@ class Order(models.Model):
                                  db_index=True)
     comment = models.TextField(verbose_name='комментарий к заказу',
                                blank=True)
+    registered_at = models.DateTimeField(verbose_name='когда сделан заказ',
+                                         auto_now_add=True)
+    called_at = models.DateTimeField(verbose_name='когда позвонили клиенту',
+                                     blank=True,
+                                     null=True)
+    delivered_at = models.DateTimeField(verbose_name='когда доставили',
+                                        blank=True,
+                                        null=True)
 
     objects = OrderQuerySet.as_manager()
 

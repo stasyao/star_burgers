@@ -17,9 +17,9 @@ class ProductDetailsInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     inlines = (ProductDetailsInline, )
     list_display = [
-        'status', 'address', 'phonenumber', 'price'
+        'status', 'registered_at', 'address', 'phonenumber', 'price'
     ]
-    ordering = ['status', ]
+    ordering = ['status', 'registered_at', ]
 
     def get_queryset(self, request):
         return Order.objects.with_prices()
