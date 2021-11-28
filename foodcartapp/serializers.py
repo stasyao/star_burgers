@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import serializers
 
 from .models import Order, ProductQuantity
@@ -19,11 +20,12 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         products = validated_data.pop('products')
-        order = Order.objects.create(**validated_data)
-        products_for_order = [
-            ProductQuantity(**product | {
-                'order': order, 'price': product['product'].price
-            }) for product in products
-        ]
-        ProductQuantity.objects.bulk_create(products_for_order)
+        with transaction.atomic():
+            order = Order.objects.create(**validated_data)
+            products_for_order = [
+                ProductQuantity(**product | {
+                    'order': order, 'price': product['product'].price
+                }) for product in products
+            ]
+            ProductQuantity.objects.bulk_create(products_for_order)
         return order

@@ -65,5 +65,11 @@ def product_list_api(request):
 def register_order(request):
     serializer = OrderSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    serializer.save()
-    return Response(serializer.data, status.HTTP_201_CREATED)
+    try:
+        serializer.save()
+        return Response(serializer.data, status.HTTP_201_CREATED)
+    except:
+        return Response(
+            {"error": "can not save order with products"},
+            status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
