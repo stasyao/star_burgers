@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'rest_framework',
     # local apps
     'foodcartapp.apps.FoodcartappConfig',
+    'places.apps.PlacesConfig',
     'restaurateur.apps.RestaurateurConfig',
 ]
 
@@ -96,6 +97,8 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+# Autofield setting
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Django debug toolbar settings
 INTERNAL_IPS = ['127.0.0.1']
 if DEBUG:
@@ -119,3 +122,5 @@ DEBUG_TOOLBAR_PANELS = [
 PHONENUMBER_DB_FORMAT = 'NATIONAL'
 PHONENUMBER_DEFAULT_FORMAT = 'NATIONAL'
 PHONENUMBER_DEFAULT_REGION = 'RU'
+# Yandex Geocoder API settings
+GECOCODER_API_KEY = env.str('GECOCODER_API_KEY')
