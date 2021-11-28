@@ -146,6 +146,11 @@ class Order(models.Model):
         NOT_PROCESSED = 0, 'не обработан'
         PROCESSED = 1, 'обработан'
 
+    PAYMENT_METHODS = [
+        ('at the order', 'оплата сразу'),
+        ('при доставке', (('cash', 'наличностью'), ('non_cash', 'картой')))
+    ]
+
     products = models.ManyToManyField(to=Product, through='ProductQuantity',
                                       verbose_name='продукт')
     firstname = models.CharField(max_length=30, verbose_name='имя')
@@ -158,6 +163,10 @@ class Order(models.Model):
                                  db_index=True)
     comment = models.TextField(verbose_name='комментарий к заказу',
                                blank=True)
+    payment_method = models.CharField(choices=PAYMENT_METHODS,
+                                      max_length=20,
+                                      verbose_name='способ оплаты',
+                                      blank=True)
     registered_at = models.DateTimeField(verbose_name='когда сделан заказ',
                                          auto_now_add=True)
     called_at = models.DateTimeField(verbose_name='когда позвонили клиенту',
