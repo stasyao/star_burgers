@@ -6,20 +6,11 @@ from django.db.models import F, Sum
 
 
 class Restaurant(models.Model):
-    name = models.CharField(
-        'название',
-        max_length=50
-    )
-    address = models.CharField(
-        'адрес',
-        max_length=100,
-        blank=True,
-    )
-    contact_phone = models.CharField(
-        'контактный телефон',
-        max_length=50,
-        blank=True,
-    )
+    name = models.CharField('название', max_length=50)
+    address = models.CharField('адрес', max_length=100, blank=True)
+    contact_phone = models.CharField('контактный телефон',
+                                     max_length=50,
+                                     blank=True)
 
     class Meta:
         verbose_name = 'ресторан'
