@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # third party apps
     'debug_toolbar',
+    'phonenumber_field',
     # local apps
     'foodcartapp.apps.FoodcartappConfig',
     'restaurateur.apps.RestaurateurConfig',
@@ -113,3 +114,7 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.logging.LoggingPanel',
     'debug_toolbar.panels.redirects.RedirectsPanel',
 ]
+# Phonenumberfield settings
+PHONENUMBER_DB_FORMAT = 'NATIONAL'
+PHONENUMBER_DEFAULT_FORMAT = 'NATIONAL'
+PHONENUMBER_DEFAULT_REGION = 'RU'
